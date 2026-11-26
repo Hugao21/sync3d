@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Início{% endblock %}
+
+{% block content %}
+<section class="capa">
+    <span class="eyebrow">PMR3304 · Sistemas de Informação</span>
+    <div class="barra"></div>
+    <h1>Sync3D</h1>
+    <p class="subtitulo">Sistema Integrado de Gestão e Filas de Impressão 3D para laboratórios de prototipagem.</p>
+    <div class="acoes">
+        {% if user.is_authenticated %}
+            <a class="botao" href="{% url 'impressao:minhas_impressoes' %}">Ir para o sistema</a>
+        {% else %}
+            <a class="botao" href="{% url 'login' %}">Entrar</a>
+            <a class="botao secundario" href="{% url 'accounts:signup' %}" style="color: var(--bg); border-color: var(--muted-light);">Criar conta de projetista</a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="secao">
+    <span class="numero-slide">02</span>
+    <span class="eyebrow">O problema</span>
+    <h2>Uma dor real de engenharia</h2>
+    <p class="lead">Laboratórios de prototipagem com múltiplas impressoras 3D enfrentam disputa por máquinas, falta de controle sobre o estoque de filamentos e nenhuma visibilidade sobre custo e eficiência de uso.</p>
+    <div class="grade">
+        <div class="cartao destaque">
+            <span class="icone">⏱</span>
+            <h3>Filas desorganizadas</h3>
+            <p class="texto-suave">Sem controle formal de quem usa qual impressora e quando.</p>
+        </div>
+        <div class="cartao destaque">
+            <span class="icone">🧵</span>
+            <h3>Estoque sem rastreio</h3>
+            <p class="texto-suave">Consumo de filamento não é medido nem associado a projetos.</p>
+        </div>
+        <div class="cartao destaque">
+            <span class="icone">📉</span>
+            <h3>Zero visibilidade</h3>
+            <p class="texto-suave">Gestores não sabem ociosidade, custo real ou eficiência do parque.</p>
+        </div>
+    </div>
+</section>
+
+<section class="secao">
+    <span class="numero-slide">03</span>
+    <span class="eyebrow">A solução</span>
+    <h2>Uma plataforma web para o parque de impressão 3D</h2>
+    <div class="grade-2">
+        <div>
+            <p class="lead texto-suave">O Sync3D organiza o uso compartilhado de máquinas, controla o estoque de insumos e fornece estatísticas detalhadas de uso para a gestão do laboratório.</p>
+            <ul class="lista-check">
+                <li>Agendamento de impressões com fila por máquina</li>
+                <li>Controle de estoque de filamentos por cor e material</li>
+                <li>Dashboard analítico de consumo e eficiência</li>
+                <li>Dois níveis de acesso com autenticação</li>
+            </ul>
+        </div>
+        <div class="cartao escuro">
+            {% if impressora_destaque %}
+                <span class="rotulo">Fila — {{ impressora_destaque.modelo }}</span>
+                <ul class="fila-mini">
+                    {% for item in fila_destaque %}
+                    <li>
+                        <div>
+                            <span class="arquivo">{{ item.peca.arquivo_modelo }}</span>
+                            <small>{{ item.peca.projeto.projetista.first_name|default:item.peca.projeto.projetista.username }} · {% for c in item.consumos.all %}{{ c.filamento }}{% if not forloop.last %}, {% endif %}{% endfor %}</small>
+                        </div>
+                        <span class="status {{ item.status }}">{{ item.get_status_display }}</span>
+                    </li>
+                    {% empty %}
+                    <li><span class="texto-suave">Fila vazia — impressora disponível.</span></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <span class="rotulo">Fila</span>
+                <p>Nenhuma impressora cadastrada ainda.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="secao">
+    <span class="numero-slide">04</span>
+    <span class="eyebrow">Atores e autenticação</span>
+    <h2>Dois perfis, um único login</h2>
+    <div class="grade-2">
+        <div class="cartao ator">
+            <span class="letra">P</span>
+            <div>
+                <h3>Projetista</h3>
+                <span class="texto-suave">Usuário padrão</span>
+                <ul>
+                    <li>Realiza agendamentos de impressão</li>
+                    <li>Seleciona insumos (filamentos)</li>
+                    <li>Submete arquivos e detalhes das peças</li>
+                    <li>Acompanha o status da sua fila</li>
+                </ul>
+            </div>
+        </div>
+        <div class="cartao ator">
+            <span class="letra a">A</span>
+            <div>
+                <h3>Administrador</h3>
+                <span class="texto-suave">Gerente de manutenção / laboratório</span>
+                <ul>
+                    <li>Gerencia o parque de impressoras</li>
+                    <li>Aprova e organiza a fila</li>
+                    <li>Registra paralisações para manutenção</li>
+                    <li>Atualiza o estoque de filamentos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="secao">
+    <span class="numero-slide">05</span>
+    <span class="eyebrow">O parque agora</span>
+    <h2>Impressoras do laboratório</h2>
+    <div class="tabela-rolagem cartao">
+        <table class="tabela">
+            <thead>
+                <tr><th>Impressora</th><th>Localização</th><th>Materiais</th><th>Status</th><th class="numero">Na fila</th></tr>
+            </thead>
+            <tbody>
+                {% for imp in impressoras %}
+                <tr>
+                    <td><strong>{{ imp.modelo }}</strong></td>
+                    <td>{{ imp.localizacao }}</td>
+                    <td>{{ imp.materiais_compativeis }}</td>
+                    <td><span class="status {{ imp.status }}">{{ imp.get_status_display }}</span></td>
+                    <td class="numero">{{ imp.tamanho_fila }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="vazio">Nenhuma impressora cadastrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

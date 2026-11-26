@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">{{ eyebrow }}</span>
+        <h1>{{ titulo }}</h1>
+    </div>
+</div>
+<div class="cartao">
+    <form method="post" class="formulario">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="acoes">
+            <button type="submit">Salvar</button>
+            <a class="botao secundario" href="javascript:history.back()">Voltar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

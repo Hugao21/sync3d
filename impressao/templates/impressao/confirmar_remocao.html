@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Remover{% endblock %}
+
+{% block content %}
+<div class="cartao destaque formulario">
+    <span class="eyebrow">Confirmação</span>
+    <h1>Remover "{{ object }}"?</h1>
+    <p class="texto-suave">Esta ação não pode ser desfeita. Itens vinculados (peças e agendamentos) também serão removidos.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="acoes">
+            <button type="submit" class="perigo">Remover</button>
+            <a class="botao secundario" href="javascript:history.back()">Voltar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
