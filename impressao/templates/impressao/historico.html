@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC06 · Histórico</span>
+        <h1>Impressões concluídas</h1>
+        <p>Projeto, material consumido e data de cada impressão finalizada.</p>
+    </div>
+</div>
+
+<form method="get" class="cartao filtros">
+    {{ form.as_p }}
+    <button type="submit">Filtrar</button>
+    <a class="botao secundario" href="{% url 'impressao:historico' %}">Limpar</a>
+</form>
+
+<div class="cartao">
+    <p class="texto-suave">{{ concluidos|length }} impress{{ concluidos|length|pluralize:"ão,ões" }} · {{ consumo_total|floatformat:0 }} g de filamento consumidos</p>
+    <div class="tabela-rolagem">
+        <table class="tabela">
+            <thead>
+                <tr><th>Data</th><th>Projeto</th><th>Peça</th><th>Impressora</th><th>Material consumido</th></tr>
+            </thead>
+            <tbody>
+                {% for item in concluidos %}
+                <tr>
+                    <td>{{ item.data_conclusao|date:"d/m/Y H:i" }}</td>
+                    <td>{{ item.peca.projeto.nome }}</td>
+                    <td><strong>{{ item.peca.nome }}</strong></td>
+                    <td>{{ item.impressora.modelo|default:"—" }}</td>
+                    <td>{% for c in item.consumos.all %}{{ c.filamento }} ({{ c.quantidade_consumida|floatformat:0 }} g){% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="vazio">Nenhuma impressão concluída no filtro selecionado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

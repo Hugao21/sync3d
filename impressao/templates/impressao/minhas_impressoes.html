@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Minhas impressões{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC05 · Acompanhamento</span>
+        <h1>Minhas impressões</h1>
+        <p>Posição na fila, status e horário estimado de início dos seus agendamentos.</p>
+    </div>
+    <a class="botao" href="{% url 'impressao:agendar' %}">+ Agendar impressão</a>
+</div>
+
+<div class="cartao">
+    <h2>Em andamento</h2>
+    <div class="tabela-rolagem">
+        <table class="tabela">
+            <thead>
+                <tr><th class="numero">Posição</th><th>Peça</th><th>Impressora</th><th>Status</th><th>Início estimado</th><th>Progresso</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for item in ativos %}
+                <tr>
+                    <td class="numero"><span class="posicao">{{ item.posicao_fila }}º</span></td>
+                    <td>
+                        <strong>{{ item.peca.nome }}</strong><br>
+                        <small class="texto-suave">{{ item.peca.projeto.nome }} · {{ item.peca.arquivo_modelo }}</small>
+                    </td>
+                    <td>
+                        {{ item.impressora.modelo|default:"—" }}
+                        {% if item.impressora.status == 'manutencao' %}<br><span class="status manutencao">Em manutenção</span>{% endif %}
+                    </td>
+                    <td>
+                        <span class="status {{ item.status }}">{{ item.get_status_display }}</span>
+                        {% if item.status == 'na_fila' and not item.aprovado %}<br><small class="texto-suave">aguardando aprovação</small>{% endif %}
+                    </td>
+                    <td>{{ item.data_inicio_previsto|date:"d/m H:i"|default:"—" }}</td>
+                    <td style="min-width: 120px;">
+                        {% if item.status == 'imprimindo' %}
+                            <div class="progresso"><div style="width: {{ item.progresso }}%;"></div></div>
+                            <small>{{ item.progresso }}%</small>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td><a class="botao pequeno secundario" href="{% url 'impressao:agendamento' item.id %}">Detalhes</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="vazio">Nenhum agendamento ativo.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="cartao">
+    <div class="cabecalho-pagina" style="border: none; margin-bottom: 0.5rem; padding: 0;">
+        <h2>Encerrados recentemente</h2>
+        <a href="{% url 'impressao:historico' %}">Ver histórico completo →</a>
+    </div>
+    <table class="tabela">
+        <tbody>
+            {% for item in recentes %}
+            <tr>
+                <td><strong>{{ item.peca.nome }}</strong></td>
+                <td>{{ item.impressora.modelo|default:"—" }}</td>
+                <td><span class="status {{ item.status }}">{{ item.get_status_display }}</span></td>
+                <td>{{ item.data_conclusao|date:"d/m/Y H:i"|default:"" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td class="vazio">Nada por aqui ainda.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
