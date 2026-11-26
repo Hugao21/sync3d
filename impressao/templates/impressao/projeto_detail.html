@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ projeto.nome }}{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">Projeto</span>
+        <h1>{{ projeto.nome }}</h1>
+        <p>{{ projeto.descricao|default:"Sem descrição." }}</p>
+    </div>
+    <div class="acoes">
+        <a class="botao secundario" href="{% url 'impressao:projeto_editar' projeto.id %}">Editar</a>
+        <a class="botao perigo" href="{% url 'impressao:projeto_remover' projeto.id %}">Remover</a>
+    </div>
+</div>
+
+<div class="cartao">
+    <div class="cabecalho-pagina" style="border: none; margin-bottom: 0.5rem; padding: 0;">
+        <h2>Peças</h2>
+        <a class="botao" href="{% url 'impressao:peca_nova' projeto.id %}">+ Nova peça</a>
+    </div>
+    <div class="tabela-rolagem">
+        <table class="tabela">
+            <thead>
+                <tr><th>Peça</th><th>Arquivo</th><th class="numero">Tempo estimado</th><th class="numero">Impressões</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for peca in projeto.pecas.all %}
+                <tr>
+                    <td><strong>{{ peca.nome }}</strong></td>
+                    <td><code>{{ peca.arquivo_modelo }}</code></td>
+                    <td class="numero">{{ peca.tempo_estimado_min }} min</td>
+                    <td class="numero">{{ peca.agendamentos.count }}</td>
+                    <td>
+                        <div class="acoes">
+                            <a class="botao pequeno" href="{% url 'impressao:agendar' %}?peca={{ peca.id }}">Agendar</a>
+                            <a class="botao pequeno secundario" href="{% url 'impressao:peca_editar' peca.id %}">Editar</a>
+                            <a class="botao pequeno perigo" href="{% url 'impressao:peca_remover' peca.id %}">Remover</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="vazio">Nenhuma peça cadastrada neste projeto.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<p><a href="{% url 'impressao:projetos' %}">← Voltar aos projetos</a></p>
+{% endblock %}

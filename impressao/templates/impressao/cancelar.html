@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancelar agendamento{% endblock %}
+
+{% block content %}
+<div class="cartao destaque formulario">
+    <span class="eyebrow">UC04 · Cancelamento</span>
+    <h1>Cancelar "{{ agendamento.peca.nome }}"?</h1>
+    <p class="texto-suave">O agendamento sairá da fila da {{ agendamento.impressora.modelo }} e a posição {{ agendamento.posicao_fila }}º será liberada para os demais itens.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="acoes">
+            <button type="submit" class="perigo">Confirmar cancelamento</button>
+            <a class="botao secundario" href="{% url 'impressao:agendamento' agendamento.id %}">Voltar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Projetos{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">Projetista</span>
+        <h1>Meus projetos</h1>
+        <p>Cada projeto agrupa as peças que você vai imprimir.</p>
+    </div>
+    <a class="botao" href="{% url 'impressao:projeto_novo' %}">+ Novo projeto</a>
+</div>
+
+<div class="grade">
+    {% for projeto in projeto_list %}
+    <a href="{% url 'impressao:projeto' projeto.id %}" class="cartao destaque" style="text-decoration: none; color: inherit;">
+        <h3>{{ projeto.nome }}</h3>
+        <p class="texto-suave">{{ projeto.descricao|default:"Sem descrição."|truncatewords:20 }}</p>
+        <small class="texto-suave">{{ projeto.num_pecas }} peça{{ projeto.num_pecas|pluralize }} · criado em {{ projeto.data_criacao|date:"d/m/Y" }}</small>
+    </a>
+    {% empty %}
+    <p class="vazio">Você ainda não tem projetos. Crie o primeiro para cadastrar peças.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Agendar impressão{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC01 · Agendamento</span>
+        <h1>Agendar impressão</h1>
+        <p>Escolha a peça, a impressora e os insumos. O agendamento entra na fila com status "Na fila" e aguarda a aprovação do Administrador.</p>
+    </div>
+</div>
+
+{% if not tem_pecas %}
+<div class="aviso">Você ainda não tem peças cadastradas. <a href="{% url 'impressao:projetos' %}">Cadastre um projeto e suas peças</a> antes de agendar.</div>
+{% else %}
+<div class="cartao">
+    <form method="post" class="formulario">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <fieldset>
+            <legend>Peça e impressora</legend>
+            <p>{{ form.peca.label_tag }} {{ form.peca.errors }} {{ form.peca }}</p>
+            <p>{{ form.impressora.label_tag }} {{ form.impressora.errors }} {{ form.impressora }}</p>
+        </fieldset>
+        <fieldset>
+            <legend>Insumos</legend>
+            <div class="linha-insumo">
+                <p>{{ form.filamento_1.label_tag }} {{ form.filamento_1.errors }} {{ form.filamento_1 }}</p>
+                <p>{{ form.quantidade_1.label_tag }} {{ form.quantidade_1.errors }} {{ form.quantidade_1 }}</p>
+            </div>
+            <div class="linha-insumo">
+                <p>{{ form.filamento_2.label_tag }} {{ form.filamento_2.errors }} {{ form.filamento_2 }}</p>
+                <p>{{ form.quantidade_2.label_tag }} {{ form.quantidade_2.errors }} {{ form.quantidade_2 }}</p>
+            </div>
+        </fieldset>
+        <div class="acoes">
+            <button type="submit">Enviar para a fila</button>
+            <button type="submit" name="cancelar" value="1" class="secundario" formnovalidate>Cancelar</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

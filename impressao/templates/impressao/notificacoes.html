@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Notificações{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC11 · Notificações</span>
+        <h1>Notificações</h1>
+        <p>Avisos do Sistema sobre a conclusão ou falha das suas impressões.</p>
+    </div>
+    {% if notificacoes_nao_lidas %}
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="secundario">Marcar todas como lidas</button>
+    </form>
+    {% endif %}
+</div>
+
+{% for n in notificacoes %}
+<div class="cartao{% if not n.lida %} destaque{% endif %}">
+    <div class="topo-item" style="display: flex; justify-content: space-between; gap: 1rem;">
+        <div>
+            {% if not n.lida %}<span class="eyebrow">Nova</span>{% endif %}
+            <p style="margin: 0;">{{ n.mensagem }}</p>
+            <small class="texto-suave">{{ n.data_envio|date:"d/m/Y H:i" }}</small>
+        </div>
+        <a class="botao pequeno secundario" href="{% url 'impressao:agendamento' n.agendamento.id %}">Ver agendamento</a>
+    </div>
+</div>
+{% empty %}
+<p class="vazio">Nenhuma notificação.</p>
+{% endfor %}
+{% endblock %}

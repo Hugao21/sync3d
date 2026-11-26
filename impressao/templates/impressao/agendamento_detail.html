@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Agendamento #{{ agendamento.id }}{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">Agendamento #{{ agendamento.id }}</span>
+        <h1>{{ agendamento.peca.nome }}</h1>
+        <p>{{ agendamento.peca.projeto.nome }} · <code>{{ agendamento.peca.arquivo_modelo }}</code></p>
+    </div>
+    <span class="status {{ agendamento.status }}">{{ agendamento.get_status_display }}</span>
+</div>
+
+{% if atraso is not None %}
+<div class="aviso">⚠ A impressora <strong>{{ agendamento.impressora.modelo }}</strong> está em manutenção há {{ atraso }} min. O início da sua impressão vai atrasar até a liberação.</div>
+{% endif %}
+{% if agendamento.status == 'bloqueado' %}
+<div class="aviso">⚠ Este agendamento foi bloqueado por falta de filamento em estoque. O Administrador foi avisado e vai liberá-lo após a reposição.</div>
+{% endif %}
+
+<div class="grade-2">
+    <div class="cartao">
+        <h2>Andamento</h2>
+        <table class="tabela">
+            <tr><th>Impressora</th><td>{{ agendamento.impressora|default:"—" }}</td></tr>
+            <tr><th>Posição na fila</th><td>{% if agendamento.status == 'na_fila' or agendamento.status == 'imprimindo' %}{{ agendamento.posicao_fila }}º{% else %}—{% endif %}</td></tr>
+            <tr><th>Aprovado</th><td>{{ agendamento.aprovado|yesno:"Sim,Aguardando aprovação" }}</td></tr>
+            <tr><th>Solicitado em</th><td>{{ agendamento.data_solicitacao|date:"d/m/Y H:i" }}</td></tr>
+            <tr><th>Início {% if agendamento.status == 'na_fila' %}estimado{% endif %}</th><td>{{ agendamento.data_inicio_previsto|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+            <tr><th>Término {% if agendamento.data_conclusao %}{% else %}estimado{% endif %}</th><td>{% if agendamento.data_conclusao %}{{ agendamento.data_conclusao|date:"d/m/Y H:i" }}{% else %}{{ fim_previsto|date:"d/m/Y H:i"|default:"—" }}{% endif %}</td></tr>
+            <tr><th>Duração estimada</th><td>{{ agendamento.peca.tempo_estimado_min }} min</td></tr>
+        </table>
+        {% if agendamento.status == 'imprimindo' %}
+            <h3 style="margin-top: 1rem;">Progresso estimado: {{ progresso }}%</h3>
+            <div class="progresso"><div style="width: {{ progresso }}%;"></div></div>
+        {% endif %}
+    </div>
+    <div>
+        <div class="cartao">
+            <h2>Insumos reservados</h2>
+            <ul>
+                {% for c in consumos %}
+                <li>{{ c.filamento }} — {{ c.quantidade_consumida|floatformat:0 }} {{ c.filamento.unidade_medida }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% if notificacoes %}
+        <div class="cartao">
+            <h2>Notificações</h2>
+            {% for n in notificacoes %}
+                <p>{{ n.mensagem }}<br><small class="texto-suave">{{ n.data_envio|date:"d/m/Y H:i" }}</small></p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="acoes">
+    <a class="botao secundario" href="{% url 'impressao:minhas_impressoes' %}">← Voltar</a>
+    {% if agendamento.status == 'na_fila' or agendamento.status == 'bloqueado' or agendamento.status == 'imprimindo' %}
+        <a class="botao perigo" href="{% url 'impressao:cancelar' agendamento.id %}">Cancelar agendamento</a>
+    {% endif %}
+</div>
+{% endblock %}
