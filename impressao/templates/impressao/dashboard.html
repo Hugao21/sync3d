@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC03 · Entidade multidimensional</span>
+        <h1>Fato: Consumo e Eficiência</h1>
+        <p>Métricas do parque entre {{ inicio|date:"d/m/Y" }} e {{ fim|date:"d/m/Y" }}, filtráveis pelas dimensões Tempo, Impressora, Usuário/Projeto e Material.</p>
+    </div>
+    <form method="post" action="{% url 'impressao:consolidar' %}">
+        {% csrf_token %}
+        <button type="submit" class="secundario">Consolidar últimos 30 dias</button>
+    </form>
+</div>
+
+<form method="get" class="cartao filtros">
+    {{ form.as_p }}
+    <button type="submit">Aplicar filtros</button>
+    <a class="botao secundario" href="{% url 'impressao:dashboard' %}">Limpar</a>
+</form>
+
+<div class="indicadores">
+    <div class="indicador">
+        <div class="rotulo">Horas totais de impressão</div>
+        <div class="valor">{{ horas_impressao }} <small>h</small></div>
+        <small class="texto-suave">{{ total_impressoes }} impress{{ total_impressoes|pluralize:"ão,ões" }} concluída{{ total_impressoes|pluralize }}</small>
+    </div>
+    <div class="indicador">
+        <div class="rotulo">Consumo acumulado de filamento</div>
+        <div class="valor">{{ consumo_total|floatformat:0 }} <small>g</small></div>
+    </div>
+    <div class="indicador">
+        <div class="rotulo">Índice de ociosidade</div>
+        <div class="valor">{{ ociosidade }} <small>%</small></div>
+        <small class="texto-suave">tempo sem imprimir no período</small>
+    </div>
+    <div class="indicador">
+        <div class="rotulo">Tempo total de inatividade</div>
+        <div class="valor">{{ inatividade_horas }} <small>h</small></div>
+        <small class="texto-suave">paralisações para manutenção</small>
+    </div>
+</div>
+
+<div class="grade-2">
+    <div class="cartao">
+        <span class="eyebrow">Dimensão Impressora</span>
+        <h3>Horas de impressão por máquina</h3>
+        <ul class="barras">
+            {% for b in graf_impressora %}
+            <li><span>{{ b.rotulo }}</span><span class="trilho"><span class="preenchido" style="display: block; width: {{ b.largura }}%;"></span></span><span class="valor-barra">{{ b.valor }} h</span></li>
+            {% empty %}
+            <li class="vazio">Sem dados no período.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="cartao">
+        <span class="eyebrow">Dimensão Material</span>
+        <h3>Consumo por material</h3>
+        <ul class="barras laranja">
+            {% for b in graf_material %}
+            <li><span>{{ b.rotulo }}</span><span class="trilho"><span class="preenchido" style="display: block; width: {{ b.largura }}%;"></span></span><span class="valor-barra">{{ b.valor|floatformat:0 }} g</span></li>
+            {% empty %}
+            <li class="vazio">Sem dados no período.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="cartao">
+        <span class="eyebrow">Dimensão Usuário / Projeto</span>
+        <h3>Consumo por projeto</h3>
+        <ul class="barras laranja">
+            {% for b in graf_projeto %}
+            <li><span>{{ b.rotulo }}</span><span class="trilho"><span class="preenchido" style="display: block; width: {{ b.largura }}%;"></span></span><span class="valor-barra">{{ b.valor|floatformat:0 }} g</span></li>
+            {% empty %}
+            <li class="vazio">Sem dados no período.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="cartao">
+        <span class="eyebrow">Dimensão Tempo</span>
+        <h3>Impressões concluídas por dia</h3>
+        <ul class="barras">
+            {% for b in graf_dia %}
+            <li><span>{{ b.rotulo }}</span><span class="trilho"><span class="preenchido" style="display: block; width: {{ b.largura }}%;"></span></span><span class="valor-barra">{{ b.valor }}</span></li>
+            {% empty %}
+            <li class="vazio">Sem dados no período.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="cartao">
+    <span class="eyebrow">UC12 · Consolidação periódica</span>
+    <h3>Últimas consolidações</h3>
+    <div class="tabela-rolagem">
+        <table class="tabela">
+            <thead>
+                <tr><th>Período</th><th class="numero">Impressões</th><th class="numero">Consumo</th><th class="numero">Eficiência média</th><th>Gerado em</th><th>Por</th></tr>
+            </thead>
+            <tbody>
+                {% for c in consolidacoes %}
+                <tr>
+                    <td>{{ c.periodo_inicio|date:"d/m/Y" }} – {{ c.periodo_fim|date:"d/m/Y" }}</td>
+                    <td class="numero">{{ c.total_impressoes }}</td>
+                    <td class="numero">{{ c.consumo_total_filamento|floatformat:0 }} g</td>
+                    <td class="numero">{{ c.eficiencia_media|floatformat:1 }}%</td>
+                    <td>{{ c.data_geracao|date:"d/m/Y H:i" }}</td>
+                    <td>{{ c.administrador.first_name|default:"Sistema" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="vazio">Nenhuma consolidação gerada ainda.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
