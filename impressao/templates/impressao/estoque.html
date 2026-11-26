@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Estoque{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC07 · Estoque de filamentos</span>
+        <h1>Estoque</h1>
+        <p>Controle por material e cor. O Sistema debita automaticamente o filamento quando cada impressão começa.</p>
+    </div>
+    <a class="botao" href="{% url 'impressao:filamento_novo' %}">+ Novo material ou cor</a>
+</div>
+
+<div class="grade-2 lateral">
+    <div class="cartao tabela-rolagem">
+        <table class="tabela">
+            <thead>
+                <tr><th>Filamento</th><th class="numero">Em estoque</th><th>Nível</th><th class="numero">Mínimo</th><th class="numero">Consumido</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for f in filamentos %}
+                <tr>
+                    <td><strong>{{ f.tipo }}</strong> {{ f.cor }}</td>
+                    <td class="numero">{{ f.quantidade_estoque|floatformat:0 }} {{ f.unidade_medida }}</td>
+                    <td>
+                        <div class="medidor{% if f.em_falta %} baixo{% endif %}"><div style="width: {{ f.percentual }}%;"></div></div>
+                        {% if f.em_falta %}<small style="color: var(--red);">abaixo do mínimo</small>{% endif %}
+                    </td>
+                    <td class="numero">{{ f.quantidade_minima|floatformat:0 }}</td>
+                    <td class="numero">{{ f.consumo_total|default:0|floatformat:0 }}</td>
+                    <td><a class="botao pequeno secundario" href="?filamento={{ f.id }}#repor">Repor</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="vazio">Nenhum filamento cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <div class="cartao destaque" id="repor">
+            <h2>Registrar reposição</h2>
+            <form method="post" class="formulario">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Confirmar reposição</button>
+            </form>
+        </div>
+        <div class="cartao">
+            <h3>Últimas movimentações</h3>
+            <table class="tabela">
+                {% for r in reposicoes %}
+                <tr>
+                    <td>{{ r.filamento }}<br><small class="texto-suave">{{ r.data_reposicao|date:"d/m H:i" }} · {{ r.administrador.first_name|default:r.administrador.username|default:"—" }}</small></td>
+                    <td class="numero" style="color: var(--green);">+{{ r.quantidade_adicionada|floatformat:0 }} g</td>
+                </tr>
+                {% empty %}
+                <tr><td class="vazio">Sem reposições.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

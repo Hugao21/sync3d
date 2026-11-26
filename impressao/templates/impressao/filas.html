@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestão de filas{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC02 · Administrador</span>
+        <h1>Filas do parque de impressoras</h1>
+        <p>Aprove agendamentos, reorganize prioridades e registre paralisações. Ao aprovar, o Sistema inicia a impressão assim que a máquina estiver livre.</p>
+    </div>
+    {% if pendentes %}<span class="status na_fila">{{ pendentes }} aguardando aprovação</span>{% endif %}
+</div>
+
+<div class="filas">
+    {% for painel in paineis %}
+    {% with imp=painel.impressora %}
+    <section class="cartao">
+        <div class="fila-cabecalho">
+            <div>
+                <span class="eyebrow">Fila — {{ imp.localizacao }}</span>
+                <h2>{{ imp.modelo }}</h2>
+                <small class="texto-suave">{{ imp.materiais_compativeis }} · inatividade acumulada {{ painel.inativa_min }} min</small>
+            </div>
+            <span class="status {{ imp.status }}">{{ imp.get_status_display }}</span>
+        </div>
+
+        {% for item in painel.fila %}
+        <div class="fila-item {{ item.status }}">
+            <div class="topo-item">
+                <div>
+                    <span class="posicao">{{ item.posicao_fila }}º</span>
+                    <strong>{{ item.peca.arquivo_modelo }}</strong>
+                    <div class="detalhe">
+                        {{ item.peca.projeto.projetista.get_full_name|default:item.peca.projeto.projetista.username }} ·
+                        {% for c in item.consumos.all %}{{ c.filamento }} {{ c.quantidade_consumida|floatformat:0 }} g{% if not forloop.last %}, {% endif %}{% endfor %}
+                        · {{ item.peca.tempo_estimado_min }} min
+                    </div>
+                    {% if item.data_inicio_previsto and item.status == 'na_fila' %}<div class="detalhe">Início estimado: {{ item.data_inicio_previsto|date:"d/m H:i" }}</div>{% endif %}
+                </div>
+                <span class="status {{ item.status }}">{% if item.status == 'na_fila' and not item.aprovado %}Pendente{% else %}{{ item.get_status_display }}{% endif %}</span>
+            </div>
+            {% if item.status == 'imprimindo' %}
+                <div class="progresso"><div style="width: {{ item.progresso }}%;"></div></div>
+            {% endif %}
+            <div class="acoes">
+                {% if item.status == 'na_fila' %}
+                    {% if not item.aprovado %}
+                    <form method="post" action="{% url 'impressao:aprovar' item.id %}">{% csrf_token %}<button class="pequeno">Aprovar</button></form>
+                    {% endif %}
+                    <form method="post" action="{% url 'impressao:mover' item.id 'cima' %}">{% csrf_token %}<button class="pequeno secundario" title="Subir prioridade">▲</button></form>
+                    <form method="post" action="{% url 'impressao:mover' item.id 'baixo' %}">{% csrf_token %}<button class="pequeno secundario" title="Descer prioridade">▼</button></form>
+                {% elif item.status == 'imprimindo' %}
+                    <form method="post" action="{% url 'impressao:finalizar' item.id 'concluido' %}">{% csrf_token %}<button class="pequeno">Concluir</button></form>
+                    <form method="post" action="{% url 'impressao:finalizar' item.id 'falha' %}">{% csrf_token %}<button class="pequeno perigo">Registrar falha</button></form>
+                {% elif item.status == 'bloqueado' %}
+                    <a class="botao pequeno secundario" href="{% url 'impressao:estoque' %}">Repor estoque</a>
+                    <form method="post" action="{% url 'impressao:desbloquear' item.id %}">{% csrf_token %}<button class="pequeno">Devolver à fila</button></form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="vazio">Fila vazia.</p>
+        {% endfor %}
+
+        <div class="acoes" style="margin-top: 0.8rem;">
+            {% if imp.status == 'manutencao' %}
+                <form method="post" action="{% url 'impressao:liberar' imp.id %}">{% csrf_token %}<button>Liberar impressora</button></form>
+            {% else %}
+                <form method="post" action="{% url 'impressao:paralisar' imp.id %}">{% csrf_token %}<button class="perigo">Registrar paralisação</button></form>
+            {% endif %}
+        </div>
+    </section>
+    {% endwith %}
+    {% empty %}
+    <p class="vazio">Nenhuma impressora ativa. <a href="{% url 'impressao:impressora_nova' %}">Cadastre uma impressora.</a></p>
+    {% endfor %}
+</div>
+{% endblock %}
