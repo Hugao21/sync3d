@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sync3D{% endblock %} · Sync3D</title>
+    <link rel="icon" href="{% static 'img/logo.svg' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <header class="topo">
+        <div class="topo-conteudo">
+            <a class="marca" href="{% url 'impressao:home' %}">
+                <img src="{% static 'img/logo.svg' %}" alt=""><b>Sync<span>3D</span></b>
+            </a>
+            <ul class="menu">
+                <li><a href="{% url 'impressao:home' %}">Início</a></li>
+                {% if perms.impressao.add_agendamento %}
+                    <li><a href="{% url 'impressao:minhas_impressoes' %}">Minhas impressões</a></li>
+                    <li><a href="{% url 'impressao:agendar' %}">Agendar</a></li>
+                    <li><a href="{% url 'impressao:projetos' %}">Projetos</a></li>
+                    <li><a href="{% url 'impressao:historico' %}">Histórico</a></li>
+                {% endif %}
+                {% if perms.impressao.change_impressora %}
+                    <li><a href="{% url 'impressao:filas' %}">Filas</a></li>
+                    <li><a href="{% url 'impressao:impressoras' %}">Impressoras</a></li>
+                    <li><a href="{% url 'impressao:estoque' %}">Estoque</a></li>
+                    <li><a href="{% url 'impressao:dashboard' %}">Dashboard</a></li>
+                {% endif %}
+            </ul>
+            <div class="usuario">
+                {% if user.is_authenticated %}
+                    {% if perms.impressao.add_agendamento %}
+                        <a class="sino" href="{% url 'impressao:notificacoes' %}" title="Notificações">🔔{% if notificacoes_nao_lidas %}<span class="contador">{{ notificacoes_nao_lidas }}</span>{% endif %}</a>
+                    {% endif %}
+                    <span class="perfil">
+                        <span class="avatar{% if perms.impressao.change_impressora %} admin{% endif %}">{% if perms.impressao.change_impressora %}A{% else %}P{% endif %}</span>
+                        {{ user.first_name|default:user.username }}
+                    </span>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Sair</button>
+                    </form>
+                {% else %}
+                    <a class="botao pequeno" href="{% url 'login' %}">Entrar</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% if messages %}
+        <ul class="mensagens">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="rodape-conteudo">
+            <span><strong>Sync3D</strong> · Sistema Integrado de Gestão e Filas de Impressão 3D</span>
+            <span>PMR3304 · Sistemas de Informação · Poli-USP · 2026</span>
+        </div>
+    </footer>
+</body>
+</html>
