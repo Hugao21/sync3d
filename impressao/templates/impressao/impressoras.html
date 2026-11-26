@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Impressoras{% endblock %}
+
+{% block content %}
+<div class="cabecalho-pagina">
+    <div>
+        <span class="eyebrow">UC08 · Parque de impressoras</span>
+        <h1>Impressoras</h1>
+        <p>Cadastre novas máquinas e inative as que não devem receber agendamentos.</p>
+    </div>
+    <a class="botao" href="{% url 'impressao:impressora_nova' %}">+ Nova impressora</a>
+</div>
+
+<div class="cartao tabela-rolagem">
+    <table class="tabela">
+        <thead>
+            <tr><th>Modelo</th><th>Localização</th><th>Materiais</th><th>Status</th><th class="numero">Na fila</th><th class="numero">Concluídas</th><th class="numero">Inatividade</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for imp in object_list %}
+            <tr>
+                <td><strong>{{ imp.modelo }}</strong></td>
+                <td>{{ imp.localizacao }}</td>
+                <td>{{ imp.materiais_compativeis }}</td>
+                <td><span class="status {{ imp.status }}">{{ imp.get_status_display }}</span></td>
+                <td class="numero">{{ imp.na_fila }}</td>
+                <td class="numero">{{ imp.total_impressoes }}</td>
+                <td class="numero">{{ imp.inatividade_min }} min</td>
+                <td>
+                    <div class="acoes">
+                        <a class="botao pequeno secundario" href="{% url 'impressao:impressora_editar' imp.id %}">Editar</a>
+                        <form method="post" action="{% url 'impressao:impressora_atividade' imp.id %}">
+                            {% csrf_token %}
+                            {% if imp.status == 'inativa' %}
+                                <button class="pequeno">Reativar</button>
+                            {% else %}
+                                <button class="pequeno perigo">Inativar</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="vazio">Nenhuma impressora cadastrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
