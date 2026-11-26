@@ -1,0 +1,28 @@
+# Blueprint do Render: cria a API (Django) e o painel (React) de uma vez.
+# No painel do Render: New > Blueprint > selecione este repositório.
+services:
+  - type: web
+    name: sync3d
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn sync3dsite.wsgi
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.5"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://sync3d-painel.onrender.com
+
+  - type: web
+    name: sync3d-painel
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE
+        value: https://sync3d.onrender.com

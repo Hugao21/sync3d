@@ -1,6 +1,8 @@
 import React from 'react'
 
-const API_URL = 'http://127.0.0.1:8000/api/v1/impressoras/'
+// Em produção, defina VITE_API_BASE (ex.: https://sync3d.onrender.com) no build.
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
+const API_URL = `${API_BASE}/api/v1/impressoras/`
 const INTERVALO_MS = 15000
 
 function Button(props) {
@@ -189,7 +191,7 @@ class App extends React.Component {
 
           {erro && (
             <p className="erro">
-              Não foi possível acessar a API ({erro}). Verifique se o Django está rodando em http://127.0.0.1:8000.
+              Não foi possível acessar a API ({erro}). Verifique se o Django está rodando em {API_BASE}.
             </p>
           )}
 

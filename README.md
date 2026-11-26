@@ -9,7 +9,7 @@ analítico de consumo e eficiência, com dois perfis de acesso (Projetista e
 Administrador).
 
 A interface segue a identidade visual da apresentação da proposta (azul-marinho
-e laranja, títulos serifados e rótulos em caixa alta).
+e laranja, fonte Comfortaa com sans-serif de reserva e rótulos em caixa alta).
 
 ## Tecnologias
 
@@ -119,11 +119,20 @@ Leitura liberada; escrita exige as permissões de modelo do usuário.
 
 ## Publicação no Render
 
-- Build command: `./build.sh`
-- Start command: `gunicorn sync3dsite.wsgi`
-- Variáveis de ambiente: `SECRET_KEY`, `DEBUG=False` e, opcionalmente,
+O arquivo `render.yaml` cria os dois serviços de uma vez
+(Render → New → Blueprint → este repositório):
+
+- **sync3d** (Web Service, Python): build `./build.sh`, start
+  `gunicorn sync3dsite.wsgi`. Variáveis: `SECRET_KEY` (gerada), `DEBUG=False`,
+  `CORS_ALLOWED_ORIGINS` (URL do painel) e, opcionalmente,
   `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_PASSWORD` e
   `DJANGO_SUPERUSER_EMAIL`.
+- **sync3d-painel** (Static Site, React): build `npm install && npm run build`
+  em `frontend/`, publicando `dist`. Variável `VITE_API_BASE` com a URL da API.
+
+Se o Render atribuir outro endereço aos serviços, ajuste `CORS_ALLOWED_ORIGINS`
+e `VITE_API_BASE` e refaça o deploy. No plano gratuito o SQLite é apagado a
+cada deploy/reinício; o `build.sh` recarrega os dados de demonstração.
 
 ## Equipe
 
