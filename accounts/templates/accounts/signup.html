@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar conta{% endblock %}
+
+{% block content %}
+<div class="caixa-login cartao destaque">
+    <span class="eyebrow">Projetista</span>
+    <h1>Criar conta</h1>
+    <p class="texto-suave">Contas novas entram como Projetista. O acesso de Administrador é concedido pelo laboratório.</p>
+    <form method="post" class="formulario">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Cadastrar</button>
+    </form>
+    <p class="texto-suave">Já tem conta? <a href="{% url 'login' %}">Entrar</a></p>
+</div>
+{% endblock %}

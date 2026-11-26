@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrar{% endblock %}
+
+{% block content %}
+<div class="caixa-login cartao destaque">
+    <span class="eyebrow">Autenticação</span>
+    <h1>Entrar no Sync3D</h1>
+    <p class="texto-suave">Um único login para Projetistas e Administradores.</p>
+    {% if next and user.is_authenticated %}
+        <p class="aviso">Sua conta não tem permissão para acessar esta página. Entre com uma conta autorizada.</p>
+    {% endif %}
+    <form method="post" class="formulario">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit">Entrar</button>
+    </form>
+    <p class="texto-suave">Ainda não tem conta? <a href="{% url 'accounts:signup' %}">Cadastre-se como projetista</a></p>
+</div>
+{% endblock %}
